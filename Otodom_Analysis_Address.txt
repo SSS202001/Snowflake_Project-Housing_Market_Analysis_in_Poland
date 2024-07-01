@@ -1,0 +1,59 @@
+-- Step 1 - Create the destination table:
+
+CREATE TABLE OTODOM_DATA_ADDRESS_FULL
+(
+    rn   int,
+    location  text,
+    address  text
+);
+
+
+
+-- Step 2 -  Create a file format object for CSV file:
+
+CREATE OR REPLACE FILE FORMAT CSV_FORMAT
+  type = csv
+  field_delimiter = ','
+  field_optionally_enclosed_by='"';
+
+
+
+-- Step 3 - Create an internal stage:
+
+ CREATE OR REPLACE STAGE my_csv_stage
+  file_format=csv_format;
+
+
+
+-- Step 4 - Load csv file data to internal stage. Please note, below PUT command can only be run from SNOWSQL (Command line prompt os Snowflake).
+
+-- Download the Otodom_Apartment_major_cities_dataset_Address file directly from my repository which contain addresses
+
+-- For windows
+PUT file://E:/Projects/Snowflake_Project/Address_Title/Otodom_Apartment_major_cities_dataset_Address.csv @my_csv_stage;
+
+
+
+
+-- Step 5 - Load data from stage to table:
+
+COPY INTO OTODOM_DATA_ADDRESS_FULL
+from @my_csv_stage;
+
+OR 
+
+COPY INTO otodom_data_address_full (rn,location,address)
+FROM (
+    SELECT $1
+      ,$2 
+      ,$3 
+   FROM @my_csv_stage/Otodom_311k_dataset_address.csv.gz
+);
+
+
+
+-- Step 6 - Verify the data:
+
+SELECT count(1) FROM OTODOM_DATA_ADDRESS_FULL;
+SELECT * FROM OTODOM_DATA_ADDRESS_FULL;
+

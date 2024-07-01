@@ -1,0 +1,164 @@
+
+
+/***
+
+Mentioned below is the complete flow of the Otodom Analysis project using Snowflake, Python, and Google Sheets.
+
+This file includes the scripts used in Snowflake.
+Python scripts are provided in separate file.
+
+***/
+
+
+
+
+--------
+STEP - A:
+--------
+
+Go to the Otodom website and analyse the data for better understanding of the project.
+
+https://www.otodom.pl/ 
+
+
+
+
+
+--------
+STEP - B:
+--------
+
+You first need to create a account with snowflake using below link:
+
+https://www.snowflake.com/en/
+
+
+
+
+Next, Install SnowSQL (Command line tool for Snowflake):
+https://developers.snowflake.com/snowsql/
+
+
+
+
+1) Login to Snowflake:
+
+go to terminal and type:
+snowsql -a <account-name> -u <username>
+enter password
+
+
+==> Please note: "account-name" can be found in the URL to login to snowflake (You can copy the account identifier from snowflake and replace '.' in it with '-' )
+
+
+
+
+2) Run the Snowflake script 'Otodom_Analysis_1'.
+
+
+OTODOM_DATA_SHORT_FLATTEN table will have data taken from the Otodom but couple of transformation will be required.
+
+
+
+--------
+STEP - C: Transform location coordinates (Latitude and Longitude) into proper address having city, suburb, country etc. 
+--------
+
+
+
+1) Before executing Python scripts, create a virtual environment and install all the required packages as mentioned in file "Otodom_Analysis.yml".
+
+
+
+2) The task of transforming location coordinates (Latitude and Longitude) into proper address having city, suburb, country etc. 
+can be achieved in Python using "geopy.geocoders". 
+
+So execute the python script "fetch_address.py". This will take location data from OTODOM_DATA_FLATTEN table and return the proper address for each location and load it into a new table OTODOM_DATA_FLATTEN_ADDRESS.
+
+
+3) If you do not want to use Python, then a csv file containing address data is given, please upload csv file data to a new table OTODOM_DATA_ADDRESS_FULL. The code for this can be found in the Snowflake script 'Otodom_Analysis_Address'.
+
+
+--------
+STEP - D: Translate Title from Polish to English language
+--------
+
+ 
+1) Before executing the below D2 step, you will need to go to google developer console (have an account) and do the following:
+       ==> Create a project and select it as current project.
+       ==> Go to Librabry and search for "Google Drive API" and enable it.
+       ==> Go to Librabry and search for "Google Sheets API" and enable it.
+       ==> Go to credentials and create a credential. Choose service account.
+       ==> Once service account credential is created, click on it and go to keys and create a new key in JSON format.
+       ==> Download the JSON file (generated key). This file is required for python to connect to your google drive to create and work with google sheets.
+
+
+2) This can also be achieved using the same python program as used above and by calling the GoogleTranslator API from Python. However for over 200k records this will fail since 200k is the max limit per day/month.
+
+Alternatively, we can achieve this in Google sheets using the GoogleTranslator API. In Google sheets, if we split the records into multiple files of 10k records each, the API seems to be working.
+
+Please execute the Python script "translate_text_gsheet.py". This will create multiple (32 files for given full dataset) in the shared google account.
+Once the files are created, please wait for 30-60 mins for all the translation to happen within the google sheets.
+
+Then run the next Python script "load_data_gsheet_to_Snowflake.py" to load the data from google sheets back to Snowflake. This will create a new table in snowflake by name "OTODOM_DATA_FLATTEN_TRANSLATE" which will have the new column "TITLE_ENG" (translated title in English)
+
+
+3) If you do not want to use Python, then a csv file containing address data is given, please upload csv file data to a new table OTODOM_DATA_FLATTEN_TRANSLATE. The code for this can be found in the Snowflake script 'Otodom_Analysis_Translate'.
+
+
+
+
+
+--------
+STEP - E:
+--------
+
+Now you have the 3 tables:
+       ==> OTODOM_DATA_FLATTEN - Contains original flattened Otodom dataset.
+       ==> OTODOM_DATA_FLATTEN_ADDRESS_FULL - Contains address for all locations coordinates.
+       ==> OTODOM_DATA_FLATTEN_TRANSLATE - Contains english translated title.
+
+
+Using the above 3 tables, create a new tables as mentioned below.
+This will also create a new column "APARTMENT_FLAG" which can be used to determine if the property ad is for an apartment or for a non apartment (like office space, commercial buildings etc).
+The code for this can be found in the Snowflake script 'Otodom_Analysis_Problems_&_Solutions'.
+
+
+
+
+
+
+--------
+STEP - F:
+--------
+
+Using the above OTODOM_DATA_TRANSFORMED table, solve the below problems. Answers are given in seperate file "Problems_n_Solutions.txt"
+
+
+1) What is the average rental price of 1 room, 2 room, 3 room and 4 room apartments in some of the major cities in Poland? 
+       Arrange the result such that avg rent for each type fo room is shown in seperate column
+
+2) I want to buy an apartment which is around 90-100 m2 and within a range of 800,000 to 1M, display the suburbs in warsaw where I can find such apartments.       
+
+3) What size of an apartment can I expect with a monthly rent of 3000 to 4000 PLN in different major cities of Poland?
+
+4) What are the most expensive apartments in major cities of Poland? Display the ad title in english along with city, suburb, cost, size.
+
+5) What is the percentage of private & business ads on otodom?
+
+6) What is the avg sale price for apartments within 50-70 m2 area in major cities of Poland?
+
+7) What is the average rental price for apartments in warsaw in different suburbs?
+       Categorize the result based on surface area 0-50, 50-100 and over 100.
+
+8) Which are the top 3 most luxurious neighborhoods in Warsaw? Luxurious neighborhoods can be defined as suburbs which has the most no of of apartments costing over 2M in cost.
+
+9) Most small families would be looking for apartment with 40-60 m2 in size. Identify the top 5 most affordable neighborhoods in warsaw.
+
+10) Which suburb in warsaw has the most and least no of private ads?
+
+11) What is the average rental price and sale price in some of the major cities in Poland?
+
+
+
+

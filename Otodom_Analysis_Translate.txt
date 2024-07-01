@@ -1,0 +1,30 @@
+-- Step 1 - Create the destination table:
+CREATE OR REPLACE TABLE OTODOM_DATA_FLATTEN_TRANSLATE
+(
+    rn   int,
+    title  text,
+    title_eng  text
+);
+
+
+-- Step 2 - Create an internal stage:
+CREATE OR REPLACE STAGE MY_CSV_STAGE_TRANS
+  file_format=csv_format;
+
+
+-- Step 3 - Load csv file data to internal stage. Please note, below PUT command can only be run from SNOWSQL (Command line prompt os Snowflake).
+
+-- Download the Otodom_Apartment_major_cities_dataset_Translate file directly from my repository which contain addresses
+
+-- For windows
+PUT file://E:/Projects/Snowflake_Project/Address_Title/Otodom_Apartment_major_cities_dataset_Translate.csv @MY_CSV_STAGE_TRANS;
+
+
+
+-- Step 4 - Load data from stage to table:
+COPY INTO OTODOM_DATA_FLATTEN_TRANSLATE
+from @MY_CSV_STAGE_TRANS;
+
+-- Step 5 - Verify the data:
+SELECT count(1) FROM OTODOM_DATA_FLATTEN_TRANSLATE;
+SELECT * FROM OTODOM_DATA_FLATTEN_TRANSLATE limit 10;
