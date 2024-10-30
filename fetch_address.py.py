@@ -19,9 +19,9 @@ nom = Nominatim(domain='localhost:8080', scheme='http')  # This is an example. R
 
 # Create the engine
 engine = create_engine(URL(
-    account='tidfxau-xl68088',
-    user='Siddhant20',
-    password='Pass@123',
+    account='****',
+    user='****',
+    password='****',
     database='project',
     schema='public',
     warehouse='COMPUTE_WH'
